@@ -22,10 +22,17 @@ $sql = "INSERT INTO tbl_chemical (chem_id, chem_name, chem_loc, chem_quan) VALUE
 // Execute the query
 if (mysqli_query($conn, $sql)) {
     // Redirect to the page with the updated chemical details
-    header("Location: admin_dashboard.php");
+    echo '<script>';
+    echo 'alert("Chemical added to the list !");';
+    echo 'window.location.href = "admin_dashboard.php";';
+    echo '</script>';
     exit();
 } else {
     // Handle error if the query fails
+    echo '<script>';
+    echo 'alert("Something went wrong !");';
+    echo 'window.location.href = "admin_dashboard.php";';
+    echo '</script>';
     echo "Error: " . mysqli_error($conn);
 }
 

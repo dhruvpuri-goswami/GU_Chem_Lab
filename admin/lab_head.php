@@ -21,6 +21,34 @@ while ($row = mysqli_fetch_assoc($result)) {
     $head[] = $row;
 }
 
+
+// Handle the form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Retrieve form data
+    $addID = $_POST['id'];
+    $addUsername = $_POST['username'];
+    $addPassword = $_POST['password'];
+    $addLab = $_POST['lab'];
+
+    // Insert the student data into tbl_student
+    $insertStudentQuery = "INSERT INTO tbl_lab_head (id,username, password, lab_no) VALUES ('$addID','$addUsername', '$addPassword', '$addLab')";
+
+    if(mysqli_query($conn, $insertStudentQuery)){
+        echo '<script>';
+        echo 'alert("Lab Head Added Successfully !!!");';
+        echo 'window.location.href = "lab_head.php";';
+        echo '</script>';
+        exit();
+    }
+    else{
+        echo '<script>';
+        echo 'alert("Something went wrong !");';
+        echo 'window.location.href = "lab_head.php";';
+        echo '</script>';
+        exit();
+    }
+}
+
 mysqli_close($conn);
 ?>
 
@@ -123,7 +151,7 @@ mysqli_close($conn);
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">REQUESTS</h6>
                         <a class="collapse-item" href="student_requested.php">STUDENT REQUESTS</a>
-                        <a class="collapse-item" href="faculty_requested.php">FACULTY REQUESTS</a>
+                        
                         <a class="collapse-item" href="forgot-password.html">APPROVED REQUESTS</a>
                     </div>
                 </div>
@@ -170,9 +198,10 @@ mysqli_close($conn);
                     </div>
 
                     <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">Lab Head head-details</h6>
-                    </div>
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Lab Head Details</h6>
+                            <button class="btn btn-primary" data-toggle="modal" data-target="#addStudentModal">Add Lab Head</button>
+                        </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -239,6 +268,41 @@ mysqli_close($conn);
         <!-- End of Content Wrapper -->
     </div>
     <!-- End of Page Wrapper -->
+
+    <!-- Head Add Modal -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1" role="dialog" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addStudentModalLabel">Add Student</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addStudentForm" method="POST">
+                                <div class="form-group">
+                                    <label for="name">ID</label>
+                                    <input type="text" class="form-control" id="name" name="id" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="username">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lab">Lab No.</label>
+                                    <input type="text" class="form-control" id="lab" name="lab" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
     <!-- Logout Modal -->
     <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"

@@ -15,12 +15,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             break;
         case "Faculty":
             $table = "tbl_faculty";
+            $loc = "Location: ./faculty/faculty_dashboard.php";
             break;
         case "LAB HEAD":
             $table = "tbl_lab_head";
+            $loc = "Location: ./lab_head/lab_head_dashboard.php";
             break;
         case "HOD":
             $table = "tbl_hod";
+            $loc = "Location: ./hod/hod_dashboard.php";
             break;
         case "ADMIN":
             if ($username === "admin" && $password === "admin") {
@@ -36,8 +39,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
     }
 
-    $sql = "SELECT * FROM $table WHERE username = '$username' AND password = '$password'";
+    $sql = "SELECT * FROM $table WHERE id = '$username' AND password = '$password'";
     $result = mysqli_query($conn, $sql);
+
 
     if ($result && mysqli_num_rows($result) > 0) {
         $_SESSION["username"] = $username;
@@ -122,7 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                           </select>
                       </div>
                       <div class="form-group">
-                          <input type="text" class="form-control" name="username" id="username" placeholder="Username" required>
+                          <input type="text" class="form-control" name="username" id="username" placeholder="User ID" required>
                       </div>
                       <div class="form-group">
                           <input type="password" class="form-control" name="password" id="password" placeholder="Password" required>

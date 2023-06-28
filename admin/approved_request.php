@@ -13,7 +13,7 @@ $username = $_SESSION["username"];
 // Connect to the database and fetch chemical details
 require '../php_files/connection.php';
 
-$sql = "SELECT * FROM tbl_request WHERE status=1";
+$sql = "SELECT * FROM tbl_request WHERE hod_status=1 AND lab_head_status=1";
 $result = mysqli_query($conn, $sql);
 
 $requests = [];
@@ -21,7 +21,6 @@ while ($row = mysqli_fetch_assoc($result)) {
     $requests[] = $row;
 }
 
-mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -128,7 +127,7 @@ mysqli_close($conn);
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">REQUESTS</h6>
                         <a class="collapse-item" href="student_requested.php">STUDENT REQUESTS</a>
-                        <a class="collapse-item" href="faculty_requested.php">FACULTY REQUESTS</a>
+                        
                         <a class="collapse-item" href="approved_request.php">APPROVED REQUESTS</a>
                     </div>
                 </div>
@@ -185,27 +184,52 @@ mysqli_close($conn);
                                     <thead>
                                         <tr>
                                             <th>No.</th>
-                                            <th>Request ID</th>
                                             <th>Chemical ID</th>
                                             <th>Chemical Name</th>
-                                            <th>Chemical Quantity</th>
-                                            <th>Location</th>
                                             <th>Requested By</th>
-                                            <th>Status</th>
+                                            <th>Lab Head Status</th>
+                                            <th>HOD Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php $count = 1; foreach ($requests as $req) : ?>
                                             <tr>
                                                 <td><?php echo $count++; ?></td>
-                                                <td><?php echo $req['request_id']; ?></td>
-                                                <td><?php echo $req['request_chem_id']; ?></td>
-                                                <td><?php echo $req['request_chem_name']; ?></td>
-                                                <td><?php echo $req['request_chem_quan']; ?></td>
-                                                <td><?php echo $req['location']; ?></td>
-                                                <td><?php echo $req['request_by']; ?></td>
+                                                <td><?php echo $req['chem_id']; ?></td>
+                                                <td>
+                                                    <?php 
+                                                        // Get the chem_id from somewhere (e.g., $req["chem_id"])
+                                                        $chem_id = $req["chem_id"];
+
+                                                        // Prepare and execute the SQL query
+                                                        $sql = "SELECT chem_name FROM tbl_chemical WHERE chem_id = '$chem_id' LIMIT 1";
+                                                        $result = mysqli_query($conn, $sql);
+                                                        $row = mysqli_fetch_assoc($result);
+                                                        $chem_name = $row["chem_name"];
+                                                        echo $chem_name;
+                                                    ?>
+                                                </td>
+                                                <td><?php echo $req['requested_by']; ?></td>
                                                 <?php
-                                                    $data = $req['status'];
+                                                    $data = $req['lab_head_status'];
+                                                    $case;
+
+                                                    switch ($data) {
+                                                        case 1:
+                                                            $case = '<button type="button" class="btn btn-success btn-sm btn-nocursor">Approved</button>';
+                                                            break;
+                                                        case -1:
+                                                            $case = '<button type="button" class="btn btn-danger btn-sm btn-nocursor">Denied</button>';
+                                                            break;
+                                                        case 0:
+                                                            $case = '<button type="button" class="btn btn-primary btn-sm btn-nocursor">Pending</button>';
+                                                            break;
+                                                    }
+                                                ?>
+
+                                                <td><?php echo $case; ?></td>
+                                                <?php
+                                                    $data = $req['hod_status'];
                                                     $case;
 
                                                     switch ($data) {
@@ -280,3 +304,6 @@ mysqli_close($conn);
 </body>
 
 </html>
+<?php
+mysqli_close($conn);
+?>

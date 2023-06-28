@@ -22,13 +22,32 @@ while ($row = mysqli_fetch_assoc($resultStudent)) {
     $students[] = $row;
 }
 
-// Fetch faculty details
-$sqlFaculty = "SELECT * FROM tbl_faculty";
-$resultFaculty = mysqli_query($conn, $sqlFaculty);
+// Handle the form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Retrieve form data
+    $addID = $_POST['id'];
+    $addUsername = $_POST['username'];
+    $addPassword = $_POST['password'];
+    $addYear = $_POST['year'];
+    $addLab = $_POST['lab'];
 
-$faculties = [];
-while ($row = mysqli_fetch_assoc($resultFaculty)) {
-    $faculties[] = $row;
+    // Insert the student data into tbl_student
+    $insertStudentQuery = "INSERT INTO tbl_student (id,username, password, std_year, lab) VALUES ('$addID','$addUsername', '$addPassword', '$addYear', '$addLab')";
+
+    if(mysqli_query($conn, $insertStudentQuery)){
+        echo '<script>';
+        echo 'alert("Student Added Successfully !!!");';
+        echo 'window.location.href = "student.php";';
+        echo '</script>';
+        exit();
+    }
+    else{
+        echo '<script>';
+        echo 'alert("Something went wrong !");';
+        echo 'window.location.href = "student.php";';
+        echo '</script>';
+        exit();
+    }
 }
 
 mysqli_close($conn);
@@ -46,7 +65,8 @@ mysqli_close($conn);
     <title>CHEMICAL LAB</title>
     <!-- Custom fonts for this template-->
     <link href="../vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
         rel="stylesheet">
     <!-- Custom styles for this template-->
     <link href="../css/sb-admin-2.min.css" rel="stylesheet">
@@ -58,14 +78,14 @@ mysqli_close($conn);
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin_dashboard.php">
                 <div class="sidebar-brand-text mx-3">CHEMICAL LAB<sup>2</sup></div>
             </a>
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="index.html">
+                <a class="nav-link" href="admin_dashboard.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>CHEMICALS</span></a>
             </li>
@@ -123,7 +143,7 @@ mysqli_close($conn);
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">REQUESTS</h6>
                         <a class="collapse-item" href="student_requested.php">STUDENT REQUESTS</a>
-                        <a class="collapse-item" href="faculty_requested.php">FACULTY REQUESTS</a>
+                        
                         <a class="collapse-item" href="approved_request.php">APPROVED REQUESTS</a>
                     </div>
                 </div>
@@ -167,17 +187,16 @@ mysqli_close($conn);
                                 class="fas fa-download fa-sm text-white-50"></i> Download Data</a>
                     </div>
 
-
-                <!-- Student Details Table -->
-                <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Student Details</h6>
-                        <a href="add_student.php" class="btn btn-primary">Add Student</a>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
+                    <!-- Student Details Table -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Student Details</h6>
+                            <button class="btn btn-primary" data-toggle="modal" data-target="#addStudentModal">Add Student</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
                                         <tr>
                                             <th>No.</th>
                                             <th>Student ID</th>
@@ -188,42 +207,87 @@ mysqli_close($conn);
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php $count =1 ; foreach ($students as $student) : ?>
+                                        <?php $count = 1; foreach ($students as $student) : ?>
                                             <tr>
-                                            <td><?php echo $count++; ?></td>
-                                            <td><?php echo $student['id']; ?></td>
-                                            <td>
-                                                <div class="details-wrapper">
-                                                    <span class="std-details"><?php echo $student['username']; ?></span>
-                                                    <input type="text" class="form-control std-edit-input" value="<?php echo $student['username']; ?>" style="display: none;">
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="details-wrapper">
-                                                    <span class="std-details"><?php echo $student['password']; ?></span>
-                                                    <input type="text" class="form-control std-edit-input" value="<?php echo $student['password']; ?>" style="display: none;">
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="details-wrapper">
-                                                    <span class="std-details"><?php echo $student['std_year']; ?></span>
-                                                    <input type="text" class="form-control std-edit-input" value="<?php echo $student['std_year']; ?>" style="display: none;">
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-primary edit-button-student btn-sm">Edit</button>
-                                                <button type="button" class="btn btn-success std-save-button btn-sm" style="display: none;">Save</button>
-                                                <button type="button" class="btn btn-danger btn-sm std-delete" btn_id="<?php echo $student['id']; ?>">Delete</button>
-                                            </td>
-                                        </tr>
+                                                <td><?php echo $count++; ?></td>
+                                                <td><?php echo $student['id']; ?></td>
+                                                <td>
+                                                    <div class="details-wrapper">
+                                                        <span class="std-details"><?php echo $student['username']; ?></span>
+                                                        <input type="text" class="form-control std-edit-input" value="<?php echo $student['username']; ?>" style="display: none;">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="details-wrapper">
+                                                        <span class="std-details"><?php echo $student['password']; ?></span>
+                                                        <input type="text" class="form-control std-edit-input" value="<?php echo $student['password']; ?>" style="display: none;">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="details-wrapper">
+                                                        <span class="std-details"><?php echo $student['std_year']; ?></span>
+                                                        <input type="text" class="form-control std-edit-input" value="<?php echo $student['std_year']; ?>" style="display: none;">
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-primary edit-button-student btn-sm">Edit</button>
+                                                    <button type="button" class="btn btn-success std-save-button btn-sm" style="display: none;">Save</button>
+                                                    <button type="button" class="btn btn-danger btn-sm std-delete" btn_id="<?php echo $student['id']; ?>">Delete</button>
+                                                </td>
+                                            </tr>
                                         <?php endforeach; ?>
                                     </tbody>
-                            </table>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- End of Main Content -->
+            <!-- Student Add Modal -->
+            <div class="modal fade" id="addStudentModal" tabindex="-1" role="dialog" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addStudentModalLabel">Add Student</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addStudentForm" method="POST">
+                                <div class="form-group">
+                                    <label for="name">ID</label>
+                                    <input type="text" class="form-control" id="name" name="id" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="username">Username</label>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="year">Year</label>
+                                    <select class="form-control" id="year" name="year" required>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lab">Lab</label>
+                                    <input type="text" class="form-control" id="lab" name="lab" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Footer -->
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">

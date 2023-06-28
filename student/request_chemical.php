@@ -13,12 +13,92 @@ $username = $_SESSION["username"];
 // Connect to the database and fetch chemical details
 require '../php_files/connection.php';
 
-$sql = "SELECT * FROM tbl_request";
+
+$studentDetails = "SELECT * FROM tbl_student WHERE id = '$username'";
+$resultStudent = mysqli_query($conn, $studentDetails);
+$rowStudent = mysqli_fetch_assoc($resultStudent);
+$studentLab = $rowStudent['lab'];
+
+$sql = "SELECT * FROM tbl_request WHERE requested_by = '$username'";
 $result = mysqli_query($conn, $sql);
+$count=0;
 
 $requests = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $requests[] = $row;
+}
+if (isset($_POST['submit'])) {
+    $studentID = $username; // Assuming you have a student ID stored in the session
+    $chemicalID = $_POST["chemical_id"];
+    $chemical_quan = $_POST['chemical_quan'];
+
+    if($chemical_quan > 0){
+        echo '<script>';
+        echo 'alert("You cannot request for chemical!")';
+        echo '</script>';
+    }
+    else{
+        // Check if the requested chemical is available in the student's lab
+        $sql = "SELECT chem_loc, chem_quan FROM tbl_chemical WHERE chem_id = '$chemicalID' AND chem_quan > 0 ORDER BY chem_quan DESC LIMIT 1";
+        $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_assoc($result);
+        if ($row !== null) {
+            $labID = $row["chem_loc"];
+            $count = mysqli_num_rows($result);
+        }
+
+        if($count > 0){
+            // Check if the student has already requested the chemical
+            $existingRequestQuery = "SELECT * FROM tbl_lab_request WHERE chem_id = '$chemicalID' AND lab_id = '$labID' AND request_lab_id = '$studentLab'";
+            $existingRequestResult = mysqli_query($conn, $existingRequestQuery);
+            $existingRequestCount = mysqli_num_rows($existingRequestResult);
+            if($existingRequestCount > 0){
+                echo '<script>';
+                echo 'alert("You have already requested this chemical!")';
+                echo '</script>';
+            }
+            else{
+                $sql = "INSERT INTO tbl_lab_request (chem_id,lab_id,request_lab_id) VALUES ('$chemicalID','$labID','$studentLab')";
+                $insertRequest = mysqli_query($conn,$sql);
+                if($insertRequest){
+                    echo '<script>';
+                    echo 'alert("Chemical Requested Successfully !!")';
+                    echo '</script>';
+                }
+                else{
+                    echo '<script>';
+                    echo 'alert("Please try after some time !!")';
+                    echo '</script>';
+                }
+            }
+        }
+        else {
+            // Check if the student has already requested the chemical
+            $existingRequestQuery = "SELECT * FROM tbl_request WHERE chem_id = '$chemicalID' AND requested_by = '$username'";
+            $existingRequestResult = mysqli_query($conn, $existingRequestQuery);
+            $existingRequestCount = mysqli_num_rows($existingRequestResult);
+        
+            if ($existingRequestCount > 0) {
+                echo '<script>';
+                echo 'alert("You have already requested this chemical!")';
+                echo '</script>';
+            } else {
+                $sql = "INSERT INTO tbl_request(chem_id, requested_by, lab_head_status, hod_status) VALUES ('$chemicalID', '$username', '0', '0')";
+                $insertRequest = mysqli_query($conn, $sql);
+                if ($insertRequest) {
+                    echo '<script>';
+                    echo 'alert("Chemical Requested Successfully !!")';
+                    echo '</script>';
+                } else {
+                    echo '<script>';
+                    echo 'alert("Please try after some time !!")';
+                    echo '</script>';
+                }
+            }
+        }
+        
+    }
+    
 }
 
 ?>
@@ -39,11 +119,6 @@ while ($row = mysqli_fetch_assoc($result)) {
         rel="stylesheet">
     <!-- Custom styles for this template-->
     <link href="../css/sb-admin-2.min.css" rel="stylesheet">
-    <style>
-    .btn-nocursor {
-        pointer-events: none;
-    }
-</style>
 </head>
 
 <body id="page-top">
@@ -53,7 +128,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin_dashboard.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="student_dashboard.php">
                 <div class="sidebar-brand-text mx-3">CHEMICAL LAB<sup>2</sup></div>
             </a>
 
@@ -62,7 +137,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="admin_dashboard.php">
+                <a class="nav-link" href="student_dashboard.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>CHEMICALS</span></a>
             </li>
@@ -70,46 +145,6 @@ while ($row = mysqli_fetch_assoc($result)) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                DATA
-            </div>
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>MANAGE ACCOUNT</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">ADD DATA</h6>
-                        <a class="collapse-item" href="student.php"> STUDENT </a>
-                        <a class="collapse-item" href="faculty.php"> FACULTY </a>
-                        <a class="collapse-item" href="lab_head.php"> LAB HEAD</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Nav Item - Utilities Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
-                    <i class="fas fa-fw fa-wrench"></i>
-                    <span>MANAGE CHEMICALS</span>
-                </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                    data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">MANAGE CHEMICALS</h6>
-                        <a class="collapse-item" href="add_chemicals.php">ADD CHEMICAL</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
 
             <!-- Heading -->
             <div class="sidebar-heading">
@@ -126,9 +161,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">REQUESTS</h6>
-                        <a class="collapse-item" href="student_requested.php">STUDENT REQUESTS</a>
-                        
-                        <a class="collapse-item" href="approved_request.php">APPROVED REQUESTS</a>
+                        <a class="collapse-item" href="request_chemical.php">My REQUESTS</a>
                     </div>
                 </div>
             </li>
@@ -255,8 +288,6 @@ while ($row = mysqli_fetch_assoc($result)) {
                             </div>
                         </div>
                     </div>
-                </div>
-                <!-- /.container-fluid -->
             </div>
             <!-- End of Main Content -->
 

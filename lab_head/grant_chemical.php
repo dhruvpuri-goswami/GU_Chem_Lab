@@ -14,92 +14,72 @@ $username = $_SESSION["username"];
 require '../php_files/connection.php';
 
 
-$studentDetails = "SELECT * FROM tbl_student WHERE id = '$username'";
-$resultStudent = mysqli_query($conn, $studentDetails);
-$rowStudent = mysqli_fetch_assoc($resultStudent);
-$studentLab = $rowStudent['lab'];
+$headDetails = "SELECT * FROM tbl_lab_head WHERE id = '$username'";
+$resultHead = mysqli_query($conn, $headDetails);
+$rowHead = mysqli_fetch_assoc($resultHead);
+$headLab = $rowHead['lab_no'];
 
-$sql = "SELECT * FROM tbl_chemical WHERE chem_loc = '$studentLab'";
+$sql = "SELECT * FROM tbl_lab_request WHERE lab_id = '$headLab' AND status = '0'";
 $result = mysqli_query($conn, $sql);
-$count=0;
 
 $chemicals = [];
 while ($row = mysqli_fetch_assoc($result)) {
     $chemicals[] = $row;
 }
-if (isset($_POST['submit'])) {
-    $studentID = $username; // Assuming you have a student ID stored in the session
-    $chemicalID = $_POST["chemical_id"];
-    $chemical_quan = $_POST['chemical_quan'];
+$count = 1;
 
-    if($chemical_quan > 0){
+if (isset($_POST['approve'])) {
+    $chemicalID = $_POST['chemical_id'];
+    $quantity = $_POST['quantity'];
+    $id = $_POST['id'];
+    $labID = $_POST['requested_lab'];
+    $studentLab = $headLab;
+
+    // Fetch the initial quantities for the labs
+    $sqlQuantities = "SELECT chem_quan, chem_loc FROM tbl_chemical WHERE chem_id = '$chemicalID' AND (chem_loc = '$studentLab' OR chem_loc = '$labID')";
+    $resultQuantities = mysqli_query($conn, $sqlQuantities);
+
+    // Store the initial quantities in an associative array
+    $initialQuantities = [];
+    while ($rowQuantity = mysqli_fetch_assoc($resultQuantities)) {
+        $initialQuantities[$rowQuantity['chem_loc']] = $rowQuantity['chem_quan'];
+    }
+
+    // Deduct the quantity from the student's lab
+    $updatedQuantityStudentLab = $initialQuantities[$studentLab] - $quantity;
+
+    // Credit the quantity to the labID
+    $updatedQuantityLabID = $initialQuantities[$labID] + $quantity;
+
+    // Update the quantities in tbl_chemical for the deducted lab
+    $sqlUpdateQuantityStudentLab = "UPDATE tbl_chemical SET chem_quan = '$updatedQuantityStudentLab' WHERE chem_id = '$chemicalID' AND chem_loc = '$studentLab'";
+    $resultUpdateQuantityStudentLab = mysqli_query($conn, $sqlUpdateQuantityStudentLab);
+
+    // Update the quantities in tbl_chemical for the credited lab
+    $sqlUpdateQuantityLabID = "UPDATE tbl_chemical SET chem_quan = '$updatedQuantityLabID' WHERE chem_id = '$chemicalID' AND chem_loc = '$labID'";
+    $resultUpdateQuantityLabID = mysqli_query($conn, $sqlUpdateQuantityLabID);
+
+    // Update the status and approved quantity in tbl_lab_request
+    $sqlApprove = "UPDATE tbl_lab_request SET status = '1', approved_quan = '$quantity' WHERE id = '$id'";
+    $resultApprove = mysqli_query($conn, $sqlApprove);
+
+    if ($resultApprove && $resultUpdateQuantityStudentLab && $resultUpdateQuantityLabID) {
         echo '<script>';
-        echo 'alert("You cannot request for chemical!")';
+        echo 'alert("Chemical approved. Quantity: '.$quantity.'");';
+        echo 'window.location.href = "grant_chemical.php";';
         echo '</script>';
+        exit();
+    } else {
+        echo '<script>';
+        echo 'alert("Failed to update the request. Please try again.");';
+        echo 'window.location.reload();';
+        echo '</script>';
+        exit();
     }
-    else{
-        // Check if the requested chemical is available in the student's lab
-        $sql = "SELECT chem_loc, chem_quan FROM tbl_chemical WHERE chem_id = '$chemicalID' AND chem_quan > 0 ORDER BY chem_quan DESC LIMIT 1";
-        $result = mysqli_query($conn, $sql);
-        $row = mysqli_fetch_assoc($result);
-        if ($row !== null) {
-            $labID = $row["chem_loc"];
-            $count = mysqli_num_rows($result);
-        }
-
-        if($count > 0){
-            // Check if the student has already requested the chemical
-            $existingRequestQuery = "SELECT * FROM tbl_lab_request WHERE chem_id = '$chemicalID' AND lab_id = '$labID' AND request_lab_id = '$studentLab'";
-            $existingRequestResult = mysqli_query($conn, $existingRequestQuery);
-            $existingRequestCount = mysqli_num_rows($existingRequestResult);
-            if($existingRequestCount > 0){
-                echo '<script>';
-                echo 'alert("You have already requested this chemical!")';
-                echo '</script>';
-            }
-            else{
-                $sql = "INSERT INTO tbl_lab_request (chem_id,lab_id,request_lab_id) VALUES ('$chemicalID','$labID','$studentLab')";
-                $insertRequest = mysqli_query($conn,$sql);
-                if($insertRequest){
-                    echo '<script>';
-                    echo 'alert("Chemical Requested Successfully !!")';
-                    echo '</script>';
-                }
-                else{
-                    echo '<script>';
-                    echo 'alert("Please try after some time !!")';
-                    echo '</script>';
-                }
-            }
-        }
-        else {
-            // Check if the student has already requested the chemical
-            $existingRequestQuery = "SELECT * FROM tbl_request WHERE chem_id = '$chemicalID' AND requested_by = '$username'";
-            $existingRequestResult = mysqli_query($conn, $existingRequestQuery);
-            $existingRequestCount = mysqli_num_rows($existingRequestResult);
-        
-            if ($existingRequestCount > 0) {
-                echo '<script>';
-                echo 'alert("You have already requested this chemical!")';
-                echo '</script>';
-            } else {
-                $sql = "INSERT INTO tbl_request(chem_id, requested_by, lab_head_status, hod_status) VALUES ('$chemicalID', '$username', '0', '0')";
-                $insertRequest = mysqli_query($conn, $sql);
-                if ($insertRequest) {
-                    echo '<script>';
-                    echo 'alert("Chemical Requested Successfully !!")';
-                    echo '</script>';
-                } else {
-                    echo '<script>';
-                    echo 'alert("Please try after some time !!")';
-                    echo '</script>';
-                }
-            }
-        }
-        
-    }
-    
 }
+
+
+
 
 mysqli_close($conn);
 ?>
@@ -129,7 +109,7 @@ mysqli_close($conn);
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="student_dashboard.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="lab_head_dashboard.php">
                 <div class="sidebar-brand-text mx-3">CHEMICAL LAB<sup>2</sup></div>
             </a>
 
@@ -138,7 +118,7 @@ mysqli_close($conn);
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="student_dashboard.php">
+                <a class="nav-link" href="lab_head_dashboard.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>CHEMICALS</span></a>
             </li>
@@ -162,7 +142,9 @@ mysqli_close($conn);
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">REQUESTS</h6>
-                        <a class="collapse-item" href="request_chemical.php">My REQUESTS</a>
+                        <a class="collapse-item" href="grant_chemical.php">GRANT CHEMICAL</a>
+                        <a class="collapse-item" href="purchase_chemical.php">PURCHASE CHEMICAL</a>
+                        <a class="collapse-item" href="all_chemical_history.php">TRACK HISTORY</a>
                     </div>
                 </div>
             </li>
@@ -210,36 +192,61 @@ mysqli_close($conn);
                     <!-- Chemical Details Table -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Chemical Details</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Chemical Requests for Lab <?php echo $headLab; ?></h6>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
+                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Chemical ID</th>
+                                        <th>Requested Lab</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($chemicals as $chemical) : ?>
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Chemical Name</th>
-                                            <th>Chemical Location</th>
-                                            <th>Chemical Quantity</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($chemicals as $chemical) : ?>
-                                            <tr>
-                                                <td><?php echo $chemical['chem_id']; ?></td>
-                                                <td><?php echo $chemical['chem_name']; ?></td>
-                                                <td><?php echo "Lab " . $chemical['chem_loc']; ?></td>
-                                                <td><?php echo $chemical['chem_quan']; ?></td>
+                                            <td><?php echo $count++; ?></td>
+                                            <td><?php echo $chemical['chem_id']; ?></td>
+                                            <td><?php echo "Lab " . $chemical['request_lab_id']; ?></td>
+                                            <td> 
                                                 <form action="" method="post">
-                                                    <input type="hidden" name="chemical_id" value="<?php echo $chemical['chem_id']; ?>">
-                                                    <input type="hidden" name="chemical_quan" value="<?php echo $chemical['chem_quan']; ?>">
-                                                    <td><button type="submit" name="submit" class="btn btn-primary edit-button-student btn-sm">Request</button></td>
+                                                    <button type="button" class="btn btn-primary edit-button-student btn-sm" data-toggle="modal" data-target="#quantityModal-<?php echo $chemical['chem_id']; ?>">Approve</button>
+                                                    
+                                                    <!-- Quantity Modal -->
+                                                    <div class="modal fade" id="quantityModal-<?php echo $chemical['chem_id']; ?>" tabindex="-1" role="dialog" aria-labelledby="quantityModalLabel-<?php echo $chemical['chem_id']; ?>" aria-hidden="true">
+                                                        <div class="modal-dialog" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="quantityModalLabel-<?php echo $chemical['chem_id']; ?>">Enter Quantity</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <input type="hidden" name="chemical_id" value="<?php echo $chemical['chem_id']; ?>">
+                                                                    <div class="form-group">
+                                                                        <label for="quantity">Quantity:</label>
+                                                                        <input type="number" class="form-control" id="quantity" name="quantity" required>
+                                                                        <input type="hidden" name="id" value="<?php echo $chemical['id'] ?>">
+                                                                        <input type="hidden" name="requested_lab" value="<?php echo $chemical['request_lab_id'] ?>">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                                    <button type="submit" name="approve" class="btn btn-primary">Confirm</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </form>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
                             </div>
                         </div>
                     </div>

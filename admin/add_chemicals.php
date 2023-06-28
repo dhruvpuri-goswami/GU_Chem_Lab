@@ -115,7 +115,7 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">REQUESTS</h6>
                         <a class="collapse-item" href="student_requested.php">STUDENT REQUESTS</a>
-                        <a class="collapse-item" href="faculty_requested.php">FACULTY REQUESTS</a>
+                        
                         <a class="collapse-item" href="approved_request.php">APPROVED REQUESTS</a>
                     </div>
                 </div>

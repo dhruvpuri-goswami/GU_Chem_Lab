@@ -13,14 +13,20 @@ $username = $_SESSION["username"];
 // Connect to the database and fetch chemical details
 require '../php_files/connection.php';
 
-$sql = "SELECT * FROM tbl_request";
+
+$headDetails = "SELECT * FROM tbl_hod WHERE id = '$username'";
+$resultHead = mysqli_query($conn, $headDetails);
+$rowHead = mysqli_fetch_assoc($resultHead);
+$headLab = $rowHead['department'];
+
+$sql = "SELECT * FROM tbl_chemical";
 $result = mysqli_query($conn, $sql);
 
-$requests = [];
+$chemicals = [];
 while ($row = mysqli_fetch_assoc($result)) {
-    $requests[] = $row;
+    $chemicals[] = $row;
 }
-
+mysqli_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -39,11 +45,6 @@ while ($row = mysqli_fetch_assoc($result)) {
         rel="stylesheet">
     <!-- Custom styles for this template-->
     <link href="../css/sb-admin-2.min.css" rel="stylesheet">
-    <style>
-    .btn-nocursor {
-        pointer-events: none;
-    }
-</style>
 </head>
 
 <body id="page-top">
@@ -53,7 +54,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin_dashboard.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="student_dashboard.php">
                 <div class="sidebar-brand-text mx-3">CHEMICAL LAB<sup>2</sup></div>
             </a>
 
@@ -62,7 +63,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="admin_dashboard.php">
+                <a class="nav-link" href="student_dashboard.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>CHEMICALS</span></a>
             </li>
@@ -70,46 +71,6 @@ while ($row = mysqli_fetch_assoc($result)) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                DATA
-            </div>
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>MANAGE ACCOUNT</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">ADD DATA</h6>
-                        <a class="collapse-item" href="student.php"> STUDENT </a>
-                        <a class="collapse-item" href="faculty.php"> FACULTY </a>
-                        <a class="collapse-item" href="lab_head.php"> LAB HEAD</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Nav Item - Utilities Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
-                    <i class="fas fa-fw fa-wrench"></i>
-                    <span>MANAGE CHEMICALS</span>
-                </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                    data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">MANAGE CHEMICALS</h6>
-                        <a class="collapse-item" href="add_chemicals.php">ADD CHEMICAL</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
 
             <!-- Heading -->
             <div class="sidebar-heading">
@@ -126,9 +87,8 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">REQUESTS</h6>
-                        <a class="collapse-item" href="student_requested.php">STUDENT REQUESTS</a>
-                        
-                        <a class="collapse-item" href="approved_request.php">APPROVED REQUESTS</a>
+                        <a class="collapse-item" href="purchase_chemical.php">CHEMICAL REQUESTS</a>
+                        <a class="collapse-item" href="all_chemical_history.php">VIEW ALL HISTORY</a>
                     </div>
                 </div>
             </li>
@@ -183,74 +143,23 @@ while ($row = mysqli_fetch_assoc($result)) {
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>No.</th>
-                                            <th>Chemical ID</th>
+                                            <th>ID</th>
                                             <th>Chemical Name</th>
-                                            <th>Requested By</th>
-                                            <th>Lab Head Status</th>
-                                            <th>HOD Status</th>
+                                            <th>Chemical Location</th>
+                                            <th>Chemical Quantity</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php $count = 1; foreach ($requests as $req) : ?>
+                                        <?php foreach ($chemicals as $chemical) : ?>
                                             <tr>
-                                                <td><?php echo $count++; ?></td>
-                                                <td><?php echo $req['chem_id']; ?></td>
-                                                <td>
-                                                    <?php 
-                                                        // Get the chem_id from somewhere (e.g., $req["chem_id"])
-                                                        $chem_id = $req["chem_id"];
+                                                <td><?php echo $chemical['chem_id']; ?></td>
+                                                <td><?php echo $chemical['chem_name']; ?></td>
+                                                <td><?php echo "Lab " . $chemical['chem_loc']; ?></td>
+                                                <td><?php echo $chemical['chem_quan']; ?></td>
 
-                                                        // Prepare and execute the SQL query
-                                                        $sql = "SELECT chem_name FROM tbl_chemical WHERE chem_id = '$chem_id' LIMIT 1";
-                                                        $result = mysqli_query($conn, $sql);
-                                                        $row = mysqli_fetch_assoc($result);
-                                                        $chem_name = $row["chem_name"];
-                                                        echo $chem_name;
-                                                    ?>
-                                                </td>
-                                                <td><?php echo $req['requested_by']; ?></td>
-                                                <?php
-                                                    $data = $req['lab_head_status'];
-                                                    $case;
-
-                                                    switch ($data) {
-                                                        case 1:
-                                                            $case = '<button type="button" class="btn btn-success btn-sm btn-nocursor">Approved</button>';
-                                                            break;
-                                                        case -1:
-                                                            $case = '<button type="button" class="btn btn-danger btn-sm btn-nocursor">Denied</button>';
-                                                            break;
-                                                        case 0:
-                                                            $case = '<button type="button" class="btn btn-primary btn-sm btn-nocursor">Pending</button>';
-                                                            break;
-                                                    }
-                                                ?>
-
-                                                <td><?php echo $case; ?></td>
-                                                <?php
-                                                    $data = $req['hod_status'];
-                                                    $case;
-
-                                                    switch ($data) {
-                                                        case 1:
-                                                            $case = '<button type="button" class="btn btn-success btn-sm btn-nocursor">Approved</button>';
-                                                            break;
-                                                        case -1:
-                                                            $case = '<button type="button" class="btn btn-danger btn-sm btn-nocursor">Denied</button>';
-                                                            break;
-                                                        case 0:
-                                                            $case = '<button type="button" class="btn btn-primary btn-sm btn-nocursor">Pending</button>';
-                                                            break;
-                                                    }
-                                                ?>
-
-                                                <td><?php echo $case; ?></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
-
-
                                 </table>
                             </div>
                         </div>
@@ -304,6 +213,3 @@ while ($row = mysqli_fetch_assoc($result)) {
 </body>
 
 </html>
-<?php
-mysqli_close($conn);
-?>

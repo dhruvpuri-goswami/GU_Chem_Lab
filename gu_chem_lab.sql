@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 26, 2023 at 06:10 AM
+-- Generation Time: Jun 28, 2023 at 02:30 PM
 -- Server version: 10.4.28-MariaDB
 -- PHP Version: 8.2.4
 
@@ -39,13 +39,27 @@ CREATE TABLE `tbl_chemical` (
 --
 
 INSERT INTO `tbl_chemical` (`chem_id`, `chem_name`, `chem_loc`, `chem_quan`) VALUES
-('1', 'Acetaminophen', '1', '50'),
-('102', 'Nutomns', '2', '12'),
-('2', 'Ibuprofen', '2', '100'),
-('3', 'Aspirin', '3', '75'),
-('4', 'Omeprazole', '4', '30'),
-('5', 'Amoxicillin', '1', '60'),
-('6', 'Lisinopril', '2', '25');
+('102', 'H2O', '1', '0'),
+('102', 'H2O', '2', '0'),
+('102', 'H2O', '3', '0'),
+('103', 'H2SO4', '1', '10'),
+('104', 'N2', '4', '5'),
+('105', 'CO2', '1', '20'),
+('106', 'NaCl', '2', '15'),
+('107', 'C6H12O6', '3', '25'),
+('108', 'HCl', '1', '8'),
+('109', 'NH3', '2', '12'),
+('110', 'C2H4', '3', '18'),
+('111', 'HNO3', '1', '6'),
+('112', 'C6H6', '4', '30'),
+('113', 'CH4', '3', '22'),
+('114', 'CaCO3', '2', '17'),
+('115', 'C8H18', '1', '11'),
+('116', 'H2', '4', '3'),
+('117', 'Fe2O3', '3', '9'),
+('118', 'C7H8', '2', '14'),
+('152', 'O2', '3', '40'),
+('216', 'N3DR4', '3', '50');
 
 -- --------------------------------------------------------
 
@@ -65,6 +79,7 @@ CREATE TABLE `tbl_faculty` (
 --
 
 INSERT INTO `tbl_faculty` (`id`, `username`, `password`, `faculty`) VALUES
+('123456', 'dhruvpuri', 'dhruvpuri', 'Computer'),
 ('225861', 'Mahesh', 'mahesh', 'Arts'),
 ('225863', 'Emily', 'emily456', 'Engineering'),
 ('225864', 'Michael', 'michael789', 'Business'),
@@ -91,7 +106,7 @@ INSERT INTO `tbl_faculty` (`id`, `username`, `password`, `faculty`) VALUES
 --
 
 CREATE TABLE `tbl_hod` (
-  `id` int(11) NOT NULL,
+  `id` varchar(3) NOT NULL,
   `username` varchar(40) NOT NULL,
   `password` varchar(255) NOT NULL,
   `department` varchar(60) NOT NULL
@@ -102,16 +117,16 @@ CREATE TABLE `tbl_hod` (
 --
 
 INSERT INTO `tbl_hod` (`id`, `username`, `password`, `department`) VALUES
-(1, 'HODChemistry', 'securepwd456', 'Chemistry'),
-(2, 'HODPhysics', 'physics123', 'Physics'),
-(3, 'HODBiology', 'biohod', 'Biology'),
-(4, 'HODMathematics', 'mathhod', 'Mathematics'),
-(5, 'HODComputerScience', 'compscience', 'Computer Science'),
-(6, 'HODEnglish', 'englishhod', 'English'),
-(7, 'HODHistory', 'historyhod', 'History'),
-(8, 'HODEconomics', 'economicshod', 'Economics'),
-(9, 'HODGeography', 'geographyhod', 'Geography'),
-(10, 'HODArt', 'arthod', 'Art');
+('098', 'HODBiology', 'biohod', 'Biology'),
+('145', 'HODComputerScience', 'compscience', 'Computer Science'),
+('256', 'HODPhysics', 'physics123', 'Physics'),
+('4', 'HODMathematics', 'mathhod', 'Mathematics'),
+('425', 'HODChemistry', 'securepwd456', 'Chemistry'),
+('426', 'HODHistory', 'historyhod', 'History'),
+('526', 'HODArt', 'arthod', 'Art'),
+('6', 'HODEnglish', 'englishhod', 'English'),
+('745', 'HODEconomics', 'economicshod', 'Economics'),
+('9', 'HODGeography', 'geographyhod', 'Geography');
 
 -- --------------------------------------------------------
 
@@ -131,7 +146,7 @@ CREATE TABLE `tbl_lab_head` (
 --
 
 INSERT INTO `tbl_lab_head` (`id`, `username`, `password`, `lab_no`) VALUES
-('102', 'john', 'john123', '4'),
+('102', 'john', 'john123', '2'),
 ('103', 'emma', 'emma123', '3'),
 ('104', 'alex', 'alex123', '4'),
 ('105', 'sara', 'sara123', '1'),
@@ -154,34 +169,56 @@ INSERT INTO `tbl_lab_head` (`id`, `username`, `password`, `lab_no`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `tbl_lab_request`
+--
+
+CREATE TABLE `tbl_lab_request` (
+  `id` int(11) NOT NULL,
+  `chem_id` varchar(3) NOT NULL,
+  `lab_id` varchar(1) NOT NULL,
+  `request_lab_id` varchar(1) NOT NULL,
+  `status` varchar(2) NOT NULL DEFAULT '0',
+  `approved_quan` varchar(2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_lab_request`
+--
+
+INSERT INTO `tbl_lab_request` (`id`, `chem_id`, `lab_id`, `request_lab_id`, `status`, `approved_quan`) VALUES
+(2, '102', '2', '1', '1', '25');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tbl_request`
 --
 
 CREATE TABLE `tbl_request` (
   `request_id` int(11) NOT NULL,
-  `request_chem_name` varchar(40) NOT NULL,
-  `request_chem_id` varchar(4) NOT NULL,
-  `request_chem_quan` varchar(3) NOT NULL,
-  `status` varchar(2) NOT NULL,
-  `location` varchar(20) NOT NULL,
-  `request_by` varchar(10) NOT NULL
+  `chem_id` varchar(3) NOT NULL,
+  `requested_by` varchar(12) NOT NULL,
+  `lab_head_status` varchar(2) NOT NULL,
+  `hod_status` varchar(2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tbl_request`
 --
 
-INSERT INTO `tbl_request` (`request_id`, `request_chem_name`, `request_chem_id`, `request_chem_quan`, `status`, `location`, `request_by`) VALUES
-(1, 'Chemical A', '101', '5', '1', 'Lab 1', 'Student'),
-(2, 'Chemical B', '102', '3', '0', 'Lab 2', 'Faculty'),
-(3, 'Chemical C', '103', '2', '-1', 'Lab 3', 'Student'),
-(4, 'Chemical D', '104', '1', '1', 'Lab 4', 'Student'),
-(5, 'Chemical E', '105', '4', '0', 'Lab 1', 'Faculty'),
-(6, 'Chemical F', '106', '2', '-1', 'Lab 2', 'Faculty'),
-(7, 'Chemical G', '107', '3', '1', 'Lab 3', 'Student'),
-(8, 'Chemical H', '108', '1', '0', 'Lab 4', 'Faculty'),
-(9, 'Chemical I', '109', '2', '1', 'Lab 1', 'Student'),
-(10, 'Chemical J', '110', '3', '-1', 'Lab 2', 'Student');
+INSERT INTO `tbl_request` (`request_id`, `chem_id`, `requested_by`, `lab_head_status`, `hod_status`) VALUES
+(11, '102', '220215260414', '1', '0'),
+(14, '106', '220215260417', '1', '0'),
+(15, '108', '220215260418', '0', '0'),
+(16, '110', '220215260419', '1', '-1'),
+(17, '111', '220215260420', '0', '1'),
+(18, '113', '220215260421', '1', '0'),
+(19, '115', '220215260422', '0', '0'),
+(20, '117', '220215260423', '1', '-1'),
+(21, '118', '220215260424', '1', '1'),
+(22, '152', '220215260425', '0', '0'),
+(23, '216', '220215260426', '1', '0'),
+(24, '102', '220283116010', '0', '0');
 
 -- --------------------------------------------------------
 
@@ -193,32 +230,34 @@ CREATE TABLE `tbl_student` (
   `id` varchar(12) NOT NULL,
   `username` varchar(40) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `std_year` varchar(4) NOT NULL
+  `std_year` varchar(1) NOT NULL,
+  `lab` varchar(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `tbl_student`
 --
 
-INSERT INTO `tbl_student` (`id`, `username`, `password`, `std_year`) VALUES
-('220215260414', 'JaneSmith', 'jane', '2022'),
-('220215260415', 'EmilyJones', 'emily', '2023'),
-('220215260416', 'MichaelBrown', 'michael', '2022'),
-('220215260417', 'SarahDavis', 'sarah', '2023'),
-('220215260418', 'DavidLee', 'david', '2022'),
-('220215260419', 'EmmaWilson', 'emma', '2023'),
-('220215260420', 'DanielMiller', 'daniel', '2022'),
-('220215260421', 'OliviaAnderson', 'olivia', '2023'),
-('220215260422', 'JamesTaylor', 'james', '2022'),
-('220215260423', 'SophiaMartinez', 'sophia', '2023'),
-('220215260424', 'WilliamHernandez', 'william', '2022'),
-('220215260425', 'AvaGarcia', 'ava', '2023'),
-('220215260426', 'AlexanderLopez', 'alexander', '2022'),
-('220215260427', 'MiaGonzalez', 'mia', '2023'),
-('220215260428', 'EthanPerez', 'ethan', '2022'),
-('220215260429', 'CharlotteRodriguez', 'charlotte', '2023'),
-('220215260430', 'LiamRivera', 'liam', '2022'),
-('220215260431', 'AmeliaTorres', 'amelia', '2023');
+INSERT INTO `tbl_student` (`id`, `username`, `password`, `std_year`, `lab`) VALUES
+('220215260414', 'JaneSmith', 'jane', '2', '1'),
+('220215260415', 'EmilyJones', 'emily', '2', '2'),
+('220215260416', 'MichaelBrown', 'michael', '2', '2'),
+('220215260417', 'SarahDavis', 'sarah', '2', '1'),
+('220215260418', 'DavidLee', 'david', '2', '3'),
+('220215260419', 'EmmaWilson', 'emma', '2', '2'),
+('220215260420', 'DanielMiller', 'daniel', '2', '2'),
+('220215260421', 'OliviaAnderson', 'olivia', '2', '1'),
+('220215260422', 'JamesTaylor', 'james', '2', '2'),
+('220215260423', 'SophiaMartinez', 'sophia', '2', '4'),
+('220215260424', 'WilliamHernandez', 'william', '2', '1'),
+('220215260425', 'AvaGarcia', 'ava', '2', '1'),
+('220215260426', 'AlexanderLopez', 'alexander', '2', '2'),
+('220215260427', 'MiaGonzalez', 'mia', '2', '4'),
+('220215260428', 'EthanPerez', 'ethan', '2', '4'),
+('220215260429', 'CharlotteRodriguez', 'charlotte', '2', '3'),
+('220215260430', 'LiamRivera', 'liam', '2', '3'),
+('220215260431', 'AmeliaTorres', 'amelia', '2', '3'),
+('220283116010', 'dhruvpuri', 'dhruvpuri', '2', '2');
 
 --
 -- Indexes for dumped tables
@@ -228,7 +267,7 @@ INSERT INTO `tbl_student` (`id`, `username`, `password`, `std_year`) VALUES
 -- Indexes for table `tbl_chemical`
 --
 ALTER TABLE `tbl_chemical`
-  ADD PRIMARY KEY (`chem_id`);
+  ADD PRIMARY KEY (`chem_id`,`chem_loc`) USING BTREE;
 
 --
 -- Indexes for table `tbl_faculty`
@@ -249,6 +288,12 @@ ALTER TABLE `tbl_lab_head`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `tbl_lab_request`
+--
+ALTER TABLE `tbl_lab_request`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `tbl_request`
 --
 ALTER TABLE `tbl_request`
@@ -265,16 +310,16 @@ ALTER TABLE `tbl_student`
 --
 
 --
--- AUTO_INCREMENT for table `tbl_hod`
+-- AUTO_INCREMENT for table `tbl_lab_request`
 --
-ALTER TABLE `tbl_hod`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+ALTER TABLE `tbl_lab_request`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `tbl_request`
 --
 ALTER TABLE `tbl_request`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

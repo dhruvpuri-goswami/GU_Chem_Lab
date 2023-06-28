@@ -53,7 +53,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="admin_dashboard.php">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="hod_dashboard.php">
                 <div class="sidebar-brand-text mx-3">CHEMICAL LAB<sup>2</sup></div>
             </a>
 
@@ -62,7 +62,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="admin_dashboard.php">
+                <a class="nav-link" href="hod_dashboard.php">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>CHEMICALS</span></a>
             </li>
@@ -70,46 +70,6 @@ while ($row = mysqli_fetch_assoc($result)) {
             <!-- Divider -->
             <hr class="sidebar-divider">
 
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                DATA
-            </div>
-
-            <!-- Nav Item - Pages Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                    aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-fw fa-cog"></i>
-                    <span>MANAGE ACCOUNT</span>
-                </a>
-                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">ADD DATA</h6>
-                        <a class="collapse-item" href="student.php"> STUDENT </a>
-                        <a class="collapse-item" href="faculty.php"> FACULTY </a>
-                        <a class="collapse-item" href="lab_head.php"> LAB HEAD</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Nav Item - Utilities Collapse Menu -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                    aria-expanded="true" aria-controls="collapseUtilities">
-                    <i class="fas fa-fw fa-wrench"></i>
-                    <span>MANAGE CHEMICALS</span>
-                </a>
-                <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                    data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <h6 class="collapse-header">MANAGE CHEMICALS</h6>
-                        <a class="collapse-item" href="add_chemicals.php">ADD CHEMICAL</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider">
 
             <!-- Heading -->
             <div class="sidebar-heading">
@@ -126,9 +86,9 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
                     <div class="bg-white py-2 collapse-inner rounded">
                         <h6 class="collapse-header">REQUESTS</h6>
-                        <a class="collapse-item" href="student_requested.php">STUDENT REQUESTS</a>
-                        
-                        <a class="collapse-item" href="approved_request.php">APPROVED REQUESTS</a>
+                        <a class="collapse-item" href="grant_chemical.php">GRANT CHEMICAL</a>
+                        <a class="collapse-item" href="purchase_chemical.php">PURCHASE CHEMICAL</a>
+                        <a class="collapse-item" href="all_chemical_history.php">TRACK HISTORY</a>
                     </div>
                 </div>
             </li>
@@ -176,7 +136,7 @@ while ($row = mysqli_fetch_assoc($result)) {
                     <!-- Chemical Details Table -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Chemical Details</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Purchase Chemical Track</h6>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
